@@ -181,55 +181,6 @@ class Slf4jTest extends GroovyTestCase {
         assert events[ind].message == "trace called"
     }
 
-    void testLogTransformInteractionWithAIC_groovy6834() {
-        assertScript '''
-            @groovy.util.logging.Slf4j
-            class MyClass {
-                static myMethod() {
-                    String message = 'hello'
-                    String audience = 'world'
-                    String result
-                    new Runnable() {
-                        void run() {
-                            result = "$message $audience"
-                        }
-                    }.run()
-                    result
-                }
-            }
-            assert MyClass.myMethod() == 'hello world'
-        '''
-    }
-
-    void testLogWithInnerClasses_groovy6373() {
-        Class clazz = new GroovyClassLoader().parseClass('''
-            @groovy.util.logging.Slf4j('logger')
-            class MyClass {
-                def loggingMethod() {
-                    logger.info  ("outer called")
-                }
-                static class MyInnerClass {
-                    def loggingMethod() {
-                        logger.info  ("inner called")
-                    }
-                }
-            }
-            new MyClass().loggingMethod()
-            new MyClass.MyInnerClass().loggingMethod()
-        ''')
-
-        Script s = (Script) clazz.newInstance()
-        s.run()
-
-        def events = appender.getEvents()
-        int ind = 0
-        assert events.size() == 2
-        assert events[ind].level == Level.INFO
-        assert events[ind].message == "outer called"
-        assert events[++ind].level == Level.INFO
-        assert events[ind].message == "inner called"
-    }
-
     void testLogGuard() {
         Class clazz = new GroovyClassLoader().parseClass('''
            @groovy.util.logging.Slf4j
